@@ -111,32 +111,30 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex justify-between items-center">
+    <!-- Entities Card -->
+    <a href="{{ route('lgus.index') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex justify-between items-center">
         <div>
-             <a href="{{ route('lgus.index') }}">
-          <p class="text-sm font-medium text-gray-600">Entities</p>
-          <p class="text-3xl font-bold text-gray-900 mt-2">{{ \App\Models\LGU::count() }}</p>
-
+            <p class="text-sm font-medium text-gray-600">Entities</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ \App\Models\LGU::count() }}</p>
         </div>
         <div class="w-12 h-12 bg-bid-green bg-opacity-10 rounded-lg flex items-center justify-center">
-          <i class="fas fa-city text-bid-green text-xl"></i>
+            <i class="fas fa-city text-bid-green text-xl"></i>
         </div>
-           </a>
-      </div>
+    </a>
 
-
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex justify-between items-center">
+    <!-- Biddings Card -->
+    <a href="{{ route('biddings.index') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex justify-between items-center">
         <div>
-          <p class="text-sm font-medium text-gray-600">Biddings</p>
-          <p class="text-3xl font-bold text-gray-900 mt-2">5</p>
-          <span class="text-bid-green text-sm font-medium flex items-center mt-1">
-            <i class="fas fa-arrow-up mr-1"></i>8% vs last month
-          </span>
+            <p class="text-sm font-medium text-gray-600">Biddings</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ \App\Models\Bidding::count() }}</p>
+            <span class="text-bid-green text-sm font-medium flex items-center mt-1">
+                <i class="fas fa-arrow-up mr-1"></i>8% vs last month
+            </span>
         </div>
         <div class="w-12 h-12 bg-bid-green bg-opacity-10 rounded-lg flex items-center justify-center">
-          <i class="fas fa-handshake text-bid-green text-xl"></i>
+            <i class="fas fa-handshake text-bid-green text-xl"></i>
         </div>
-      </div>
+    </a>
 
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex justify-between items-center">
         <div>
