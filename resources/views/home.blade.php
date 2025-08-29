@@ -114,7 +114,7 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex justify-between items-center">
         <div>
              <a href="{{ route('lgus.index') }}">
-          <p class="text-sm font-medium text-gray-600">Entity</p>
+          <p class="text-sm font-medium text-gray-600">Entities</p>
           <p class="text-3xl font-bold text-gray-900 mt-2">{{ \App\Models\LGU::count() }}</p>
 
         </div>
