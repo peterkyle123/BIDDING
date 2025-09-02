@@ -10,7 +10,7 @@ class LGU extends Model
     use HasFactory;
 
     protected $table = 'lgus'; // must match your table
-    protected $fillable = ['name', 'location','envelope_system'];
+    protected $fillable = ['name', 'location','envelope_system', 'bac_chairman',];
     
     public function biddings()
 {

@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 class LGUController extends Controller
 {
     public function index() {
-        $lgus = LGU::all();
+        $lgus = LGU::orderBy('name', 'asc')->get();
+
         return view('lgus', compact('lgus'));
     }
 
@@ -17,10 +18,11 @@ class LGUController extends Controller
             'name' => 'required',
             'location' => 'required',
             'envelope_system' => 'nullable|string|max:255',
+              'bac_chairman' => 'nullable|string|max:255',
 
         ]);
 
-        LGU::create($request->only('name','location','envelope_system'));
+        LGU::create($request->only('name','location','envelope_system','bac_chairman'));
         return redirect()->route('lgus.index');
     }
 
@@ -28,11 +30,12 @@ class LGUController extends Controller
         $request->validate([
             'name' => 'required',
             'location' => 'required',
-             'envelope_system' => 'nullable|string|max:255', // add this
+             'envelope_system' => 'nullable|string|max:255',
+             'bac_chairman' // add this
 
         ]);
 
-        $lgu->update($request->only('name','location','envelope_system'));
+        $lgu->update($request->only('name','location','envelope_system','bac_chairman'));
         return redirect()->route('lgus.index');
     }
 

@@ -99,6 +99,20 @@
         </button>
     </div>
 
+    <!-- search field -->
+    <div class="mb-4">
+<input 
+    type="text" 
+    id="searchInput" 
+    placeholder="Search LGU..." 
+    class="w-full px-3 py-2 border border-transparent bg-transparent rounded-lg 
+           focus:ring-2 focus:ring-bid-green focus:border-bid-green outline-none 
+           text-black placeholder-black italic"
+    onkeyup="filterLGUs()"
+/>
+
+
+</div>
     <!-- LGU Table -->
     <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
@@ -108,6 +122,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entity</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">E.S</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">BAC Chairman</th> <!-- ✅ New -->
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
             </thead>
@@ -118,6 +133,7 @@
                     <td class="px-6 py-4">{{ $lgu->name }}</td>
                     <td class="px-6 py-4">{{ $lgu->location }}</td>
                     <td class="px-6 py-4">{{ $lgu->envelope_system }}</td>
+                    <td class="px-6 py-4">{{ $lgu->bac_chairman }}</td> <!-- ✅ Show BAC Chairman -->
 
               <td class="px-6 py-4 space-x-2">
     <!-- View Button -->
@@ -127,7 +143,7 @@
     </a>
 
     <!-- Edit Button -->
-    <button onclick="openModal('edit', {{ $lgu->id }}, '{{ $lgu->name }}', '{{ $lgu->location }}')" 
+    <button onclick="openModal('edit', {{ $lgu->id }}, '{{ $lgu->name }}', '{{ $lgu->location }}','{{ $lgu->envelope_system }}','{{ $lgu->bac_chairman }}')" 
             class="text-blue-600 hover:text-blue-800 font-semibold">
         Edit
     </button>
@@ -165,10 +181,25 @@
                     <label class="block text-gray-700 mb-1">Location</label>
                     <input type="text" name="location" id="lguLocation" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none" required>
                 </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 mb-1">E.S</label>
-                <input type="text" name="envelope_system" id="lguES" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none">
-            </div>
+          <div class="mb-4">
+    <label class="block text-gray-700 mb-1">E.S</label>
+    <input 
+        type="number" 
+        name="envelope_system" 
+        id="lguES" 
+        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none"
+        min="1" 
+        step="1"
+        placeholder="Enter number only"
+        required>
+</div>
+
+
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-1">BAC Chairman</label>
+            <input type="text" name="bac_chairman" id="lguBacChairman"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none">
+        </div>
 
                 <div class="flex justify-end space-x-2">
                     <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Cancel</button>
@@ -183,7 +214,7 @@
 </div>
 
 <script>
-function openModal(action, id = '', name = '', location = '', envelope_system = '') {
+function openModal(action, id = '', name = '', location = '', envelope_system = '', bac_chairman = '') {
     const modal = document.getElementById('lguModal');
     modal.classList.remove('hidden');
     const form = document.getElementById('lguForm');
@@ -196,7 +227,8 @@ function openModal(action, id = '', name = '', location = '', envelope_system = 
         form.method = 'POST';
         document.getElementById('lguName').value = '';
         document.getElementById('lguLocation').value = '';
-        document.getElementById('lguES').value = action === 'add' ? '' : envelope_system;
+        document.getElementById('lguES').value = '';
+        document.getElementById('lguBacChairman').value = ''; // ✅ reset
         document.getElementById('lguId').value = '';
     } else {
         document.getElementById('modalTitle').innerText = 'Edit LGU';
@@ -205,16 +237,50 @@ function openModal(action, id = '', name = '', location = '', envelope_system = 
         document.getElementById('lguId').value = id;
         document.getElementById('lguName').value = name;
         document.getElementById('lguLocation').value = location;
+        document.getElementById('lguES').value = envelope_system;
+        document.getElementById('lguBacChairman').value = bac_chairman; // ✅ load value
         let methodInput = document.createElement('input');
-        methodInput.type =         'hidden';
+        methodInput.type = 'hidden';
         methodInput.name = '_method';
         methodInput.value = 'PUT';
         form.appendChild(methodInput);
     }
 }
 
+
 function closeModal() {
     document.getElementById('lguModal').classList.add('hidden');
+}
+function filterLGUs() {
+    const input = document.getElementById("searchInput");
+    const filter = input.value.toLowerCase();
+    const rows = document.querySelectorAll("tbody tr");
+
+    rows.forEach(row => {
+        const entityCell = row.querySelector("td:nth-child(2)"); // Entity column
+        if (entityCell) {
+            const originalText = entityCell.textContent;
+            let text = originalText.toLowerCase();
+
+            // Remove "municipality of " from search basis
+            let strippedText = text.replace(/^municipality of\s*/i, "");
+
+            // Reset previous highlights
+            entityCell.innerHTML = originalText;
+
+            if (filter && strippedText.startsWith(filter)) {
+                row.style.display = ""; // show row
+
+                // Highlight only the matching part (ignoring "Municipality of")
+                const regex = new RegExp(`^municipality of\\s*(${filter})`, "i");
+                entityCell.innerHTML = originalText.replace(regex, "Municipality of <span class='bg-yellow-300'>$1</span>");
+            } else if (filter === "") {
+                row.style.display = ""; // show all if empty
+            } else {
+                row.style.display = "none"; // hide if no match
+            }
+        }
+    });
 }
 </script>
 

@@ -83,7 +83,7 @@
             <div>
                 <p class="text-white text-sm font-medium">Admin</p>
                 <p class="text-gray-300 text-xs">Administrator</p>
-            </div>
+            </div>  
         </div>
     </div>
 </div>
@@ -107,6 +107,7 @@
             <p><span class="font-semibold">Name:</span> {{ $lgu->name }}</p>
             <p><span class="font-semibold">Location:</span> {{ $lgu->location }}</p>
             <p><span class="font-semibold">Envelope System:</span> {{ $lgu->envelope_system }}</p>
+             <p><span class="font-semibold">BAC Chairman:</span> {{ $lgu->bac_chairman }}</p>
         </div>
     </div>
 </div>
