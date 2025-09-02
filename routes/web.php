@@ -5,6 +5,7 @@ use App\Http\Controllers\LGUController; // <-- add this
 use App\Http\Controllers\BiddingController;
 use App\Models\Bidding;
 use Carbon\Carbon;
+use App\Http\Controllers\DocumentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,3 +39,7 @@ Route::get('/recent-biddings', function () {
 
     return response()->json($recentBiddings);
 });
+// Documents routes
+Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
