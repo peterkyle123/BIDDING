@@ -24,7 +24,7 @@
            text-black placeholder-black italic"
     onkeyup="filterLGUs()"
 />
-
+    
 
 </div>
     <!-- LGU Table -->
