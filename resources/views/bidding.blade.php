@@ -8,7 +8,7 @@
 
 <!-- Header + Add Button -->
 <div class="flex justify-between items-center mb-6 bg-gradient-to-r from-bid-green to-bid-orange p-4 rounded-lg shadow-md">
-    <h1 class="text-2xl font-semibold text-green">Bidding Management</h1>
+    <h1 class="text-2xl font-semibold text-green">Biddingsssss Management</h1>
     <button onclick="openModal('add')" class="bg-white text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2">
         <i class="fas fa-plus"></i><span>Add Project</span>
     </button>
@@ -39,29 +39,31 @@
                 <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->pre_bid)->format('M d, Y') }}</td>
                 <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->bid_submission)->format('M d, Y') }}</td>
                 <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->bid_opening)->format('M d, Y') }}</td>
-                <td class="px-4 py-3 relative flex space-x-2 justify-end">
-                    <!-- Edit Button -->
-                    <button onclick="event.stopPropagation(); openModal(
-                        'edit',
-                        {{ $bidding->id }},
-                        '{{ addslashes($bidding->project_name) }}',
-                        '{{ $bidding->abc }}',
-                        '{{ $bidding->pre_bid }}',
-                        '{{ $bidding->bid_submission }}',
-                        '{{ $bidding->bid_opening }}',
-                        {{ $bidding->lgu_id }},
-                        '{{ addslashes($bidding->lgu->envelope_system ?? '') }}',
-                        '{{ addslashes($bidding->reference_number ?? '') }}',
-                        '{{ addslashes($bidding->delivery_schedule ?? '') }}'
-                    )" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">Edit</button>
+               <td class="px-4 py-3 relative flex space-x-2 justify-end">
+    <!-- Existing Edit + Delete buttons here -->
 
-                    <!-- Delete Button -->
-                    <form action="{{ route('biddings.destroy', $bidding->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this bidding?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">Delete</button>
-                    </form>
-                </td>
+    <!-- Docs Button -->
+    <div class="relative inline-block text-left">
+        <button type="button"
+            class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 flex items-center"
+            onclick="toggleDropdown('docs-{{ $bidding->id }}')">
+            <i class="fas fa-file-word mr-1"></i> Docs
+        </button>
+
+        <!-- Dropdown -->
+        <div id="docs-{{ $bidding->id }}" 
+             class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-50 border">
+            @forelse($documents as $doc)
+                <a href="{{ route('biddings.generate', ['bidding' => $bidding->id, 'document' => $doc->id]) }}"
+                   class="block px-4 py-2 text-gray-700 hover:bg-bid-green hover:text-white">
+                    <i class="fas fa-file-word mr-2 text-blue-500"></i> {{ $doc->title }}
+                </a>
+            @empty
+                <p class="px-4 py-2 text-gray-500">No templates uploaded.</p>
+            @endforelse
+        </div>
+    </div>
+</td>
             </tr>
             <!-- Collapsible Details -->
             <tr id="details-{{ $loop->iteration }}" class="bg-gray-50 hidden">
@@ -215,6 +217,21 @@ function toggleDetails(index) {
     const row = document.getElementById('details-' + index);
     row.classList.toggle('hidden');
 }
+function toggleDropdown(id) {
+    // Hide all dropdowns first
+    document.querySelectorAll('[id^="docs-"]').forEach(el => el.classList.add('hidden'));
+    // Toggle the selected one
+    document.getElementById(id).classList.toggle('hidden');
+}
+
+// Hide dropdown if user clicks outside
+window.addEventListener('click', function(e) {
+    document.querySelectorAll('[id^="docs-"]').forEach(el => {
+        if (!el.contains(e.target) && !e.target.closest('button')) {
+            el.classList.add('hidden');
+        }
+    });
+});
 </script>
 
 @endsection

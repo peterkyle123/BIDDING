@@ -1,4 +1,4 @@
-<!-- Sidebar -->
+Sidebar
 <div class="fixed inset-y-0 left-0 w-64 bg-bid-dark-green shadow-xl z-50">
   <!-- Logo -->
   <div class="flex items-center justify-center h-16 bg-bid-green">
@@ -43,7 +43,7 @@
     <a href="{{ route('biddings.index') }}" 
        class="flex items-center px-4 py-3 rounded-lg group
        {{ request()->routeIs('biddings.*') ? 'bg-bid-green text-white' : 'text-gray-300 hover:bg-bid-green hover:text-white' }}">
-        <i class="fas fa-users mr-3
+        <i class="fas fa-box mr-3
            {{ request()->routeIs('biddings.*') ? 'text-bid-orange' : 'text-gray-400 group-hover:text-white' }}"></i>
         Biddings
     </a>

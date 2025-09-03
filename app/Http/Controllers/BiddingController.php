@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bidding;
-use App\Models\LGU;   
+use App\Models\LGU;
+use App\Models\Document;
 use Illuminate\Http\Request;
 
 class BiddingController extends Controller
@@ -11,8 +12,10 @@ class BiddingController extends Controller
     public function index()
     {
         $biddings = Bidding::with('lgu')->get();
-        $lgus = LGU::all(); // fetch all LGUs for dropdown
-        return view('bidding', compact('biddings', 'lgus'));
+        $lgus = LGU::all();
+        $documents = Document::all(); // ✅ fetch templates for dropdown
+
+        return view('bidding', compact('biddings', 'lgus', 'documents'));
     }
 
     public function store(Request $request)
@@ -26,7 +29,6 @@ class BiddingController extends Controller
             'lgu_id' => 'required|exists:lgus,id',
             'delivery_schedule' => 'nullable|string|max:255',
             'reference_number' => 'nullable|string|max:255',
-
         ]);
 
         Bidding::create($request->only([
@@ -36,8 +38,8 @@ class BiddingController extends Controller
             'bid_submission',
             'bid_opening',
             'lgu_id',
-            'reference_number',      // ✅ New
-            'delivery_schedule',     // ✅ New
+            'reference_number',
+            'delivery_schedule',
         ]));
 
         return redirect()->route('biddings.index')->with('success', 'Bidding project added!');
@@ -54,7 +56,6 @@ class BiddingController extends Controller
             'lgu_id' => 'required|exists:lgus,id',
             'delivery_schedule' => 'nullable|string|max:255',
             'reference_number' => 'nullable|string|max:255',
-            // ✅ New
         ]);
 
         $bidding->update($request->only([
@@ -64,8 +65,8 @@ class BiddingController extends Controller
             'bid_submission',
             'bid_opening',
             'lgu_id',
-            'reference_number',      // ✅ New
-            'delivery_schedule',     // ✅ New
+            'reference_number',
+            'delivery_schedule',
         ]));
 
         return redirect()->route('biddings.index')->with('success', 'Bidding project updated!');
