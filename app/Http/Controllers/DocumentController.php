@@ -127,15 +127,19 @@ $request->validate([
 
     // ✅ replace placeholders
     $templateProcessor->setValue('project_name', $bidding->project_name);
+    $templateProcessor->setValue('solicitation_number', $bidding->solicitation_number ?? ''); // 🆕 Added
     $templateProcessor->setValue('reference_number', $bidding->reference_number ?? '');
     $templateProcessor->setValue('abc', $bidding->abc);
     $templateProcessor->setValue('pre_bid', $bidding->pre_bid);
     $templateProcessor->setValue('bid_submission', $bidding->bid_submission);
-       $templateProcessor->setValue('bid_opening', $this->formatDateWithPartOfDay($bidding->bid_opening));
+    $templateProcessor->setValue('bid_opening', $this->formatDateWithPartOfDay($bidding->bid_opening));
     $templateProcessor->setValue('delivery_schedule', $bidding->delivery_schedule ?? '');
     $templateProcessor->setValue('name', $bidding->lgu->name ?? '');
     $templateProcessor->setValue('location', $bidding->lgu->location ?? '');
-    $templateProcessor->setValue('bac_chairman', $bidding->lgu->bac_chairman ?? '');
+   $templateProcessor->setValue(
+    'bac_chairman',
+    isset($bidding->lgu->bac_chairman) ? strtoupper($bidding->lgu->bac_chairman) : ''
+);
 
     // ✅ ensure folder exists
     $outputDir = storage_path('app/generated');

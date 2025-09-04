@@ -5,7 +5,7 @@
 @section('content')
     <!-- Header -->
     <div class="flex justify-between items-center mb-6 bg-gradient-to-r from-bid-green to-bid-orange p-4 rounded-lg shadow-md">
-        <h1 class="text-2xl font-semibold text-white">Documents Management</h1>
+        <h1 class="text-2xl font-semibold text-green">Documents Management</h1>
     </div>
     @if ($errors->any())
     <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">

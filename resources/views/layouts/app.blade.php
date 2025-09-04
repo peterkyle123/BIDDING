@@ -36,6 +36,7 @@
     <div class="ml-64 p-6">
         @yield('content')
     </div>
+@stack('scripts')
 
 </body>
 </html>

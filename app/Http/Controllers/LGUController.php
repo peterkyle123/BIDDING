@@ -31,7 +31,7 @@ class LGUController extends Controller
             'name' => 'required',
             'location' => 'required',
              'envelope_system' => 'nullable|string|max:255',
-             'bac_chairman' // add this
+            'bac_chairman' => 'nullable|string|max:255',
 
         ]);
 

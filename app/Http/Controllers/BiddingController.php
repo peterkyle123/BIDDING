@@ -9,14 +9,17 @@ use Illuminate\Http\Request;
 
 class BiddingController extends Controller
 {
-    public function index()
-    {
-        $biddings = Bidding::with('lgu')->get();
-        $lgus = LGU::all();
-        $documents = Document::all(); // ✅ fetch templates for dropdown
+public function index(Request $request)
+{
+    $biddings = Bidding::with('lgu')->get();
+    $lgus = LGU::all();
+    $documents = \App\Models\Document::all();
 
-        return view('bidding', compact('biddings', 'lgus', 'documents'));
-    }
+    $openId = $request->query('open'); // 👈 grab ?open=ID
+
+    return view('bidding', compact('biddings', 'lgus', 'documents', 'openId'));
+}
+
 
     public function store(Request $request)
     {

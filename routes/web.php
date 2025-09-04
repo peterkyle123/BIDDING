@@ -33,11 +33,32 @@ Route::delete('/lgus/{lgu}', [LGUController::class, 'destroy'])->name('lgus.dest
 Route::resource('lgus', LGUController::class);
 Route::resource('biddings', BiddingController::class);
 Route::get('/recent-biddings', function () {
-    $recentBiddings = Bidding::where('created_at', '>=', now()->subMinutes(5))
-        ->latest()
-        ->get();
+    $recentBiddings = Bidding::with('lgu')
+        ->latest('created_at')
+        ->take(5)
+        ->get()
+        ->map(function ($bidding) {
+            $createdAt = \Carbon\Carbon::parse($bidding->created_at);
 
-    return response()->json($recentBiddings);
+            return [
+                'id'                 => $bidding->id,
+                'project_name'       => $bidding->project_name,
+                'abc'                => $bidding->abc,
+                'pre_bid'            => $bidding->pre_bid,
+                'bid_submission'     => $bidding->bid_submission,
+                'bid_opening'        => $bidding->bid_opening,
+                'reference_number'   => $bidding->reference_number,
+                'solicitation_number'=> $bidding->solicitation_number,
+                'delivery_schedule'  => $bidding->delivery_schedule,
+                'lgu_id'             => $bidding->lgu_id,
+                'lgu_name'           => $bidding->lgu->name ?? null,
+                'lgu_envelope'       => $bidding->lgu->envelope_system ?? null,
+                'created_at'         => $bidding->created_at->toDateTimeString(),
+                'created_human'      => $createdAt->isFuture() ? 'just now' : $createdAt->diffForHumans(),
+            ];
+        });
+
+    return response()->json(['data' => $recentBiddings]);
 });
 // Documents routes
 Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');

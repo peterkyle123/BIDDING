@@ -69,7 +69,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Recent Activity -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
           <ul id="recent-activity" class="space-y-4"></ul>
       </div>
 
@@ -113,48 +113,53 @@
   </main>
 @endsection
 
+
 @push('scripts')
 <script>
-    async function fetchRecentBiddings() {
-        try {
-            let response = await fetch('/recent-biddings');
-            let biddings = await response.json();
+async function fetchRecentBiddings() {
+    try {
+        let response = await fetch('/recent-biddings');
+        if (!response.ok) throw new Error('Failed to fetch recent biddings');
 
-            let container = document.getElementById('recent-activity');
-            container.innerHTML = '';
+        let result = await response.json();
+        let biddings = result.data || [];
+        let container = document.getElementById('recent-activity');
+        container.innerHTML = '';
 
-            if (biddings.length === 0) {
-                container.innerHTML = '<li class="text-sm text-gray-500">No new biddings in the last 5 minutes.</li>';
-                return;
-            }
-
-            biddings.forEach(bidding => {
-                let createdAt = new Date(bidding.created_at);
-                let timeAgo = timeSince(createdAt);
-
-                container.innerHTML += `
-                    <li class="flex items-start space-x-3">
-                        <span class="w-2 h-2 bg-bid-orange rounded-full mt-2"></span>
-                        <div>
-                            <p class="text-sm text-gray-900">"${bidding.project_name}" bidding is added</p>
-                            <p class="text-xs text-gray-500">${timeAgo} ago</p>
-                        </div>
-                    </li>
-                `;
-            });
-        } catch (error) {
-            console.error("Error fetching biddings:", error);
+        if (!biddings.length) {
+            container.innerHTML = '<li class="text-sm text-gray-500">No biddings available.</li>';
+            return;
         }
-    }
 
-    function timeSince(date) {
-        let seconds = Math.floor((new Date() - date) / 1000);
-        let interval = Math.floor(seconds / 60);
-        if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "");
-        return Math.floor(seconds) + " seconds";
-    }
+        biddings.forEach(bidding => {
+            // safely escape quotes
+            let name = bidding.project_name ? bidding.project_name.replace(/"/g, '&quot;') : '';
+            let created = bidding.created_human || '';
 
-    fetchRecentBiddings();
-    setInterval(fetchRecentBiddings, 60000);
+            container.innerHTML += `
+                <li class="flex items-start space-x-3">
+                    <span class="w-2 h-2 bg-bid-orange rounded-full mt-2"></span>
+                    <div>
+                        <a href="/biddings?open=${bidding.id}" class="text-sm text-gray-900 hover:underline">
+                            "${name}" bidding was added
+                        </a>
+                        <p class="text-xs text-gray-500">${created}</p>
+                    </div>
+                </li>
+            `;
+        });
+
+    } catch (error) {
+        console.error("❌ Error fetching biddings:", error);
+    }
+}
+
+// run on page load
+fetchRecentBiddings();
+// refresh every 60 seconds
+setInterval(fetchRecentBiddings, 60000);
 </script>
 @endpush
+
+
+

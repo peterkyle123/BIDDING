@@ -8,7 +8,7 @@
 
 <!-- Header + Add Button -->
 <div class="flex justify-between items-center mb-6 bg-gradient-to-r from-bid-green to-bid-orange p-4 rounded-lg shadow-md">
-    <h1 class="text-2xl font-semibold text-green">Biddingsssss Management</h1>
+    <h1 class="text-2xl font-semibold text-green">Biddings Management</h1>
     <button onclick="openModal('add')" class="bg-white text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2">
         <i class="fas fa-plus"></i><span>Add Project</span>
     </button>
@@ -18,69 +18,94 @@
 <div class="bg-white shadow-sm rounded-lg overflow-x-auto">
    <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50 sticky top-0">
-            <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project Name</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ABC</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Procuring Entity</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pre-bid</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bid Submission</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bid Opening</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            @forelse($biddings as $bidding)
-            <tr class="hover:bg-bid-green/10 cursor-pointer" onclick="toggleDetails({{ $loop->iteration }})">
-                <td class="px-4 py-3">{{ $loop->iteration }}</td>
-                <td class="px-4 py-3 truncate max-w-xs" title="{{ $bidding->project_name }}">{{ $bidding->project_name }}</td>
-                <td class="px-4 py-3">₱{{ number_format($bidding->abc, 2) }}</td>
-                <td class="px-4 py-3 truncate max-w-xs" title="{{ $bidding->lgu->name ?? 'N/A' }}">{{ $bidding->lgu->name ?? 'N/A' }}</td>
-                <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->pre_bid)->format('M d, Y') }}</td>
-                <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->bid_submission)->format('M d, Y') }}</td>
-                <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->bid_opening)->format('M d, Y') }}</td>
-               <td class="px-4 py-3 relative flex space-x-2 justify-end">
-    <!-- Existing Edit + Delete buttons here -->
+    <tr>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project Name</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ABC</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bid Submission</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+    </tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+    @forelse($biddings as $bidding)
+    <tr class="hover:bg-bid-green/10 cursor-pointer" onclick="toggleDetails({{ $loop->iteration }})">
+        <td class="px-4 py-3">{{ $loop->iteration }}</td>
+        <td class="px-4 py-3 truncate max-w-xs" title="{{ $bidding->project_name }}">{{ $bidding->project_name }}</td>
+        <td class="px-4 py-3">₱{{ number_format($bidding->abc, 2) }}</td>
+        <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->bid_submission)->format('M d, Y') }}</td>
+        <td class="px-4 py-3 flex space-x-2">
+            <!-- Edit -->
+            <button onclick="event.stopPropagation(); openModal(
+                'edit',
+                {{ $bidding->id }},
+                '{{ addslashes($bidding->project_name) }}',
+                '{{ $bidding->abc }}',
+                '{{ $bidding->pre_bid }}',
+                '{{ $bidding->bid_submission }}',
+                '{{ $bidding->bid_opening }}',
+                {{ $bidding->lgu_id }},
+                '{{ addslashes($bidding->lgu->envelope_system ?? '') }}',
+                '{{ addslashes($bidding->solicitation_number ?? '') }}',
+                '{{ addslashes($bidding->reference_number ?? '') }}',
+                '{{ addslashes($bidding->delivery_schedule ?? '') }}'
+            )" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
+                Edit
+            </button>
 
-    <!-- Docs Button -->
-    <div class="relative inline-block text-left">
-        <button type="button"
-            class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 flex items-center"
-            onclick="toggleDropdown('docs-{{ $bidding->id }}')">
-            <i class="fas fa-file-word mr-1"></i> Docs
-        </button>
+            <!-- Delete -->
+            <form action="{{ route('biddings.destroy', $bidding->id) }}" method="POST"
+                  onsubmit="event.stopPropagation(); return confirm('Are you sure you want to delete this bidding?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">
+                    Delete
+                </button>
+            </form>
 
-        <!-- Dropdown -->
-        <div id="docs-{{ $bidding->id }}" 
-             class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-50 border">
-            @forelse($documents as $doc)
-                <a href="{{ route('biddings.generate', ['bidding' => $bidding->id, 'document' => $doc->id]) }}"
-                   class="block px-4 py-2 text-gray-700 hover:bg-bid-green hover:text-white">
-                    <i class="fas fa-file-word mr-2 text-blue-500"></i> {{ $doc->title }}
-                </a>
-            @empty
-                <p class="px-4 py-2 text-gray-500">No templates uploaded.</p>
-            @endforelse
-        </div>
-    </div>
-</td>
-            </tr>
-            <!-- Collapsible Details -->
-            <tr id="details-{{ $loop->iteration }}" class="bg-gray-50 hidden">
-                <td colspan="8" class="px-4 py-2">
-                    <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                        <div><strong>Reference Number:</strong> {{ $bidding->reference_number ?: 'N/A' }}</div>
-                        <div><strong>Delivery Schedule:</strong> {{ $bidding->delivery_schedule ?: 'N/A' }}</div>
-                        <div><strong>Envelope System:</strong> {{ $bidding->lgu->envelope_system ?? 'N/A' }}</div>
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="8" class="px-4 py-3 text-center text-gray-500">No biddings found.</td>
-            </tr>
-            @endforelse
-        </tbody>
+            <!-- Docs Dropdown -->
+            <div class="relative inline-block text-left">
+                <button type="button"
+                    class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 flex items-center"
+                    onclick="event.stopPropagation(); toggleDropdown('docs-{{ $bidding->id }}')">
+                    <i class="fas fa-file-word mr-1"></i> Docs
+                </button>
+                <div id="docs-{{ $bidding->id }}"
+                     class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-50 border">
+                    @forelse($documents as $doc)
+                        <a href="{{ route('biddings.generate', ['bidding' => $bidding->id, 'document' => $doc->id]) }}"
+                           class="block px-4 py-2 text-gray-700 hover:bg-bid-green hover:text-white">
+                            <i class="fas fa-file-word mr-2 text-blue-500"></i> {{ $doc->title }}
+                        </a>
+                    @empty
+                        <p class="px-4 py-2 text-gray-500">No templates uploaded.</p>
+                    @endforelse
+                </div>
+            </div>
+        </td>
+    </tr>
+
+    <!-- Collapsible Details -->
+    <tr id="details-{{ $loop->iteration }}" class="bg-gray-50 hidden">
+        <td colspan="5" class="px-4 py-2">
+            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                <div><strong>Solicitation #:</strong> {{ $bidding->solicitation_number ?? 'N/A' }}</div>
+                <div><strong>Reference #:</strong> {{ $bidding->reference_number ?: 'N/A' }}</div>
+                <div><strong>Delivery Schedule:</strong> {{ $bidding->delivery_schedule ?: 'N/A' }}</div>
+                <div><strong>Pre-bid:</strong> {{ \Carbon\Carbon::parse($bidding->pre_bid)->format('M d, Y h:i A') }}</div>
+                <div><strong>Bid Opening:</strong> {{ \Carbon\Carbon::parse($bidding->bid_opening)->format('M d, Y h:i A') }}</div>
+                <div><strong>Procuring Entity:</strong> {{ $bidding->lgu->name ?? 'N/A' }}</div>
+                <div><strong>Envelope System:</strong> {{ $bidding->lgu->envelope_system ?? 'N/A' }}</div>
+            </div>
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="5" class="px-4 py-3 text-center text-gray-500">No biddings found.</td>
+    </tr>
+    @endforelse
+</tbody>
+
+
     </table>
 </div>
 
@@ -240,5 +265,30 @@ window.addEventListener('click', function(e) {
     });
 });
 </script>
+@if(isset($openId) && $openId)
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Find the bidding row by ID
+        let bidding = @json($biddings->firstWhere('id', $openId));
+
+        if (bidding) {
+            openModal(
+                'edit',
+                bidding.id,
+                bidding.project_name,
+                bidding.abc,
+                bidding.pre_bid,
+                bidding.bid_submission,
+                bidding.bid_opening,
+                bidding.lgu_id,
+                bidding.lgu?.envelope_system ?? '',
+                bidding.solicitation_number ?? '',
+                bidding.reference_number ?? '',
+                bidding.delivery_schedule ?? ''
+            );
+        }
+    });
+</script>
+@endif
 
 @endsection
