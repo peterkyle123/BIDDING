@@ -29,6 +29,7 @@ class BiddingController extends Controller
             'lgu_id' => 'required|exists:lgus,id',
             'delivery_schedule' => 'nullable|string|max:255',
             'reference_number' => 'nullable|string|max:255',
+            'solicitation_number' => 'nullable|string|max:255',
         ]);
 
         Bidding::create($request->only([
@@ -40,6 +41,8 @@ class BiddingController extends Controller
             'lgu_id',
             'reference_number',
             'delivery_schedule',
+            'solicitation_number',
+
         ]));
 
         return redirect()->route('biddings.index')->with('success', 'Bidding project added!');
@@ -56,6 +59,7 @@ class BiddingController extends Controller
             'lgu_id' => 'required|exists:lgus,id',
             'delivery_schedule' => 'nullable|string|max:255',
             'reference_number' => 'nullable|string|max:255',
+            'solicitation_number' => 'nullable|string|max:255',
         ]);
 
         $bidding->update($request->only([
@@ -67,6 +71,8 @@ class BiddingController extends Controller
             'lgu_id',
             'reference_number',
             'delivery_schedule',
+            'solicitation_number',
+
         ]));
 
         return redirect()->route('biddings.index')->with('success', 'Bidding project updated!');

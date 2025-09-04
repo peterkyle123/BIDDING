@@ -117,6 +117,11 @@
                 <label class="block text-gray-700 mb-1">Bid Opening</label>
                 <input type="datetime-local" name="bid_opening" id="bidOpening" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none" required>
             </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-1">Solicitation Number</label>
+                <input type="text" name="solicitation_number" id="solicitationNumber"
+                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none">
+            </div>
 
             <div class="mb-4">
                 <label class="block text-gray-700 mb-1">Reference Number</label>
@@ -163,7 +168,7 @@ document.getElementById('lguId').addEventListener('change', function() {
     document.getElementById('envelopeSystem').value = envelopeSystem;
 });
 
-function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub = '', bidOpen = '', lguId = '', envelopeSystem = '', referenceNumber = '', deliverySchedule = '') {
+function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub = '', bidOpen = '', lguId = '', envelopeSystem = '',solicitationNumber = '', referenceNumber = '', deliverySchedule = '') {
     const modal = document.getElementById('biddingModal');
     modal.classList.remove('hidden');
     const form = document.getElementById('biddingForm');
@@ -182,6 +187,7 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub 
         document.getElementById('bidOpening').value = '';
         document.getElementById('lguId').value = '';
         document.getElementById('envelopeSystem').value = '';
+        document.getElementById('solicitationNumber').value = solicitationNumber;
         document.getElementById('referenceNumber').value = '';
         document.getElementById('deliverySchedule').value = '';
     } else {
@@ -195,6 +201,7 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub 
         document.getElementById('bidOpening').value = bidOpen;
         document.getElementById('lguId').value = lguId;
         document.getElementById('envelopeSystem').value = envelopeSystem;
+        document.getElementById('solicitationNumber').value = solicitationNumber;
         document.getElementById('referenceNumber').value = referenceNumber;
         document.getElementById('deliverySchedule').value = deliverySchedule;
 

@@ -9,8 +9,28 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
+use Carbon\Carbon;
 class DocumentController extends Controller
 {
+    
+private function formatDateWithPartOfDay($dateTime)
+{
+    $carbon = Carbon::parse($dateTime);
+
+    // Determine part of the day
+    $hour = $carbon->format('G'); // 0–23
+    if ($hour >= 5 && $hour < 12) {
+        $part = 'in the morning';
+    } elseif ($hour >= 12 && $hour < 17) {
+        $part = 'in the afternoon';
+    } elseif ($hour >= 17 && $hour < 21) {
+        $part = 'in the evening';
+    } else {
+        $part = 'at night';
+    }
+
+    return $carbon->format('F d, Y \a\t g:i a') . " {$part}";
+}
     // Show documents page
     public function index()
     {
@@ -111,10 +131,10 @@ $request->validate([
     $templateProcessor->setValue('abc', $bidding->abc);
     $templateProcessor->setValue('pre_bid', $bidding->pre_bid);
     $templateProcessor->setValue('bid_submission', $bidding->bid_submission);
-    $templateProcessor->setValue('bid_opening', $bidding->bid_opening);
+       $templateProcessor->setValue('bid_opening', $this->formatDateWithPartOfDay($bidding->bid_opening));
     $templateProcessor->setValue('delivery_schedule', $bidding->delivery_schedule ?? '');
     $templateProcessor->setValue('name', $bidding->lgu->name ?? '');
-    $templateProcessor->setValue('lgu_location', $bidding->lgu->location ?? '');
+    $templateProcessor->setValue('location', $bidding->lgu->location ?? '');
     $templateProcessor->setValue('bac_chairman', $bidding->lgu->bac_chairman ?? '');
 
     // ✅ ensure folder exists
