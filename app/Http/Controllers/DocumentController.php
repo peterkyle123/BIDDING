@@ -147,7 +147,7 @@ $request->validate([
         File::makeDirectory($outputDir, 0755, true);
     }
 
-    $outputPath = $outputDir . '/Generated_' . $bidding->id . '_' . $document->id . '.docx';
+    $outputPath = $bidding->lgu->name. $bidding->id . '_' . $document->id . '.docx';
     $templateProcessor->saveAs($outputPath);
 
     return response()->download($outputPath)->deleteFileAfterSend(true);

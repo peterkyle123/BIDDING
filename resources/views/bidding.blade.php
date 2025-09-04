@@ -66,7 +66,7 @@
             <div class="relative inline-block text-left">
                 <button type="button"
                     class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 flex items-center"
-                    onclick="event.stopPropagation(); toggleDropdown('docs-{{ $bidding->id }}')">
+                    onclick="event.stopPropagation(); toggleDropdown('docs-{{ $bidding->id }}'); toggleDetails({{ $loop->iteration }})">
                     <i class="fas fa-file-word mr-1"></i> Docs
                 </button>
                 <div id="docs-{{ $bidding->id }}"

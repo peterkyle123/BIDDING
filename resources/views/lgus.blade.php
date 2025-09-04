@@ -185,6 +185,39 @@ document.addEventListener('DOMContentLoaded', function() {
     modal.addEventListener('click', function(e) {
         if(e.target === modal) closeModal();
     });
+  const searchInput = document.getElementById("searchInput");
+    searchInput.addEventListener("input", filterLGUs);
+
+    function filterLGUs() {
+        const filter = searchInput.value.toLowerCase();
+        const rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach(row => {
+            const entityCell = row.querySelector("td:nth-child(2)"); // Entity column
+            if (entityCell) {
+                const originalText = entityCell.textContent;
+                let text = originalText.toLowerCase();
+
+                // Remove "municipality of " from search basis
+                let strippedText = text.replace(/^municipality of\s*/i, "");
+
+                // Reset previous highlights
+                entityCell.innerHTML = originalText;
+
+                if (filter && strippedText.startsWith(filter)) {
+                    row.style.display = ""; // show row
+
+                    // Highlight only the matching part (ignoring "Municipality of")
+                    const regex = new RegExp(`^municipality of\\s*(${filter})`, "i");
+                    entityCell.innerHTML = originalText.replace(regex, "Municipality of <span class='bg-yellow-300'>$1</span>");
+                } else if (filter === "") {
+                    row.style.display = ""; // show all if empty
+                } else {
+                    row.style.display = "none"; // hide if no match
+                }
+            }
+        });
+    }
 
 });
 </script>
