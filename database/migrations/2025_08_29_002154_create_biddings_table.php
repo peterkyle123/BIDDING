@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('project_name');
             $table->decimal('abc', 15, 2); // Approved Budget for the Contract
-            $table->dateTime('pre_bid');
-            $table->dateTime('bid_submission');
+            $table->dateTime('pre_bid')->nullable();
+$table->dateTime('bid_submission')->nullable();
             $table->dateTime('bid_opening');
             $table->foreignId('lgu_id')->constrained('lgus')->onDelete('cascade');
             $table->timestamps();

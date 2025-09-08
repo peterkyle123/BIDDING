@@ -32,7 +32,10 @@
         <td class="px-4 py-3">{{ $loop->iteration }}</td>
         <td class="px-4 py-3 truncate max-w-xs" title="{{ $bidding->project_name }}">{{ $bidding->project_name }}</td>
         <td class="px-4 py-3">₱{{ number_format($bidding->abc, 2) }}</td>
-        <td class="px-4 py-3">{{ \Carbon\Carbon::parse($bidding->bid_submission)->format('M d, Y') }}</td>
+        <td class="px-4 py-3">
+    {{ $bidding->bid_submission ? \Carbon\Carbon::parse($bidding->bid_submission)->format('M d, Y') : 'N/A' }}
+</td>
+
         <td class="px-4 py-3 flex space-x-2">
             <!-- Edit -->
             <button onclick="event.stopPropagation(); openModal(
@@ -85,29 +88,66 @@
     </tr>
 
     <!-- Collapsible Details -->
-    <tr id="details-{{ $loop->iteration }}" class="bg-gray-50 hidden">
-        <td colspan="5" class="px-4 py-2">
-            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                <div><strong>Solicitation #:</strong> {{ $bidding->solicitation_number ?? 'N/A' }}</div>
-                <div><strong>Reference #:</strong> {{ $bidding->reference_number ?: 'N/A' }}</div>
-                <div><strong>Delivery Schedule:</strong> {{ $bidding->delivery_schedule ?: 'N/A' }}</div>
-                <div><strong>Pre-bid:</strong> {{ \Carbon\Carbon::parse($bidding->pre_bid)->format('M d, Y h:i A') }}</div>
-                <div><strong>Bid Opening:</strong> {{ \Carbon\Carbon::parse($bidding->bid_opening)->format('M d, Y h:i A') }}</div>
-                <div><strong>Procuring Entity:</strong> {{ $bidding->lgu->name ?? 'N/A' }}</div>
-                <div><strong>Envelope System:</strong> {{ $bidding->lgu->envelope_system ?? 'N/A' }}</div>
+    <!-- Collapsible Details (replace your existing details-{{ $loop->iteration }} row) -->
+<tr id="details-{{ $loop->iteration }}" class="bg-gray-50 hidden">
+    <td colspan="5" class="px-4 py-2">
+        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+            <div><strong>Solicitation #:</strong> {{ $bidding->solicitation_number ?? 'N/A' }}</div>
+            <div><strong>Reference #:</strong> {{ $bidding->reference_number ?: 'N/A' }}</div>
+            <div><strong>Delivery Schedule:</strong> {{ $bidding->delivery_schedule ?: 'N/A' }}</div>
+            <div><strong>Pre-bid:</strong>
+                {{ $bidding->pre_bid ? \Carbon\Carbon::parse($bidding->pre_bid)->format('M d, Y h:i A') : 'N/A' }}
             </div>
-        </td>
-    </tr>
+            <div><strong>Bid Opening:</strong>
+                {{ $bidding->bid_opening ? \Carbon\Carbon::parse($bidding->bid_opening)->format('M d, Y h:i A') : 'N/A' }}
+            </div>
+            <div><strong>Procuring Entity:</strong> {{ $bidding->lgu->name ?? 'N/A' }}</div>
+            <div><strong>Envelope System:</strong> {{ $bidding->lgu->envelope_system ?? 'N/A' }}</div>
+        </div>
+
+        <!-- ===== Document selection form (Step 1) ===== -->
+        <form id="zipForm-{{ $bidding->id }}" action="{{ route('biddings.downloadZip', $bidding->id) }}" method="POST">
+            @csrf
+
+            <div class="mb-2 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="selectAll-{{ $bidding->id }}" class="select-all">
+                    <label for="selectAll-{{ $bidding->id }}" class="text-sm text-gray-700">Select all</label>
+                </div>
+                <div class="text-xs text-gray-500">Choose templates to include in the ZIP for this bidding</div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded p-2 bg-white">
+                @foreach($documents as $doc)
+                    <label class="flex items-center space-x-2 py-1 px-2 rounded hover:bg-gray-50">
+                        <input type="checkbox" name="document_ids[]" value="{{ $doc->id }}" class="doc-checkbox">
+                        <span class="text-sm">{{ $doc->title }} @if($doc->lgu_id) <span class="text-xs text-gray-400">({{ $doc->lgu->name ?? 'LGU' }})</span> @endif</span>
+                    </label>
+                @endforeach
+                @if($documents->isEmpty())
+                    <div class="text-sm text-gray-500 px-2">No templates available.</div>
+                @endif
+            </div>
+
+            <div class="mt-3 flex items-center justify-end space-x-2">
+                <button type="button" onclick="toggleDetails({{ $loop->iteration }});" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Close</button>
+                <button type="submit" id="downloadBtn-{{ $bidding->id }}" class="px-4 py-2 rounded-lg bg-bid-green text-white hover:bg-bid-dark-green download-zip-btn" disabled>
+                    Download Selected as ZIP
+                </button>
+            </div>
+        </form>
+        <!-- ===== end selection form ===== -->
+    </td>
     @empty
     <tr>
-        <td colspan="5" class="px-4 py-3 text-center text-gray-500">No biddings found.</td>
+        <td colspan="5" class="px-4 py-3 text-center text-gray-500">
+            No biddings found.
+        </td>
     </tr>
-    @endforelse
+@endforelse
 </tbody>
+</tr>
 
-
-    </table>
-</div>
 
 <!-- Modal -->
 <div id="biddingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
@@ -130,12 +170,12 @@
 
             <div class="mb-4">
                 <label class="block text-gray-700 mb-1">Pre-bid Conference</label>
-                <input type="datetime-local" name="pre_bid" id="preBid" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none" required>
+                <input type="datetime-local" name="pre_bid" id="preBid" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none" >
             </div>
 
             <div class="mb-4">
                 <label class="block text-gray-700 mb-1">Bid Submission</label>
-                <input type="datetime-local" name="bid_submission" id="bidSubmission" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none" required>
+                <input type="datetime-local" name="bid_submission" id="bidSubmission" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none" >
             </div>
 
             <div class="mb-4">
@@ -187,6 +227,32 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    // initialize each bidding form
+    document.querySelectorAll('form[id^="zipForm-"]').forEach(form => {
+        const bidId = form.id.replace('zipForm-', '');
+        const checkboxes = form.querySelectorAll('input.doc-checkbox');
+        const selectAll = form.querySelector('.select-all');
+        const downloadBtn = document.getElementById('downloadBtn-' + bidId);
+
+        const updateButton = () => {
+            const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+            if (downloadBtn) downloadBtn.disabled = !anyChecked;
+            if (selectAll) selectAll.checked = checkboxes.length && Array.from(checkboxes).every(cb => cb.checked);
+        };
+
+        // toggle all
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                updateButton();
+            });
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updateButton));
+        updateButton();
+    });
+});
 document.getElementById('lguId').addEventListener('change', function() {
     const selectedOption = this.options[this.selectedIndex];
     const envelopeSystem = selectedOption.getAttribute('data-envelope') || '';
@@ -207,8 +273,8 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub 
         document.getElementById('bidId').value = '';
         document.getElementById('projectName').value = '';
         document.getElementById('abc').value = '';
-        document.getElementById('preBid').value = '';
-        document.getElementById('bidSubmission').value = '';
+        document.getElementById('preBid').value = preBid ?? '';
+        document.getElementById('bidSubmission').value = bidSub ?? '';                   
         document.getElementById('bidOpening').value = '';
         document.getElementById('lguId').value = '';
         document.getElementById('envelopeSystem').value = '';

@@ -70,3 +70,5 @@ Route::get('/documents/{document}/edit-word', [DocumentController::class, 'editW
 // routes/web.php
 Route::get('/biddings/{bidding}/generate/{document}', [DocumentController::class, 'generateFromTemplate'])
     ->name('biddings.generate');
+Route::post('/biddings/{bidding}/download-zip', [BiddingController::class, 'downloadZip'])
+    ->name('biddings.downloadZip');

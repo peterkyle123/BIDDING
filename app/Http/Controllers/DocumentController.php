@@ -141,16 +141,26 @@ $request->validate([
     isset($bidding->lgu->bac_chairman) ? strtoupper($bidding->lgu->bac_chairman) : ''
 );
 
-    // ✅ ensure folder exists
-    $outputDir = storage_path('app/generated');
-    if (!File::exists($outputDir)) {
-        File::makeDirectory($outputDir, 0755, true);
-    }
+   // Ensure output dir
+$outputDir = storage_path('app/generated');
+if (!\Illuminate\Support\Facades\File::exists($outputDir)) {
+    \Illuminate\Support\Facades\File::makeDirectory($outputDir, 0755, true);
+}
 
-    $outputPath = $bidding->lgu->name. $bidding->id . '_' . $document->id . '.docx';
-    $templateProcessor->saveAs($outputPath);
+// Sanitize values for safe filenames
+$title       = preg_replace('/[^A-Za-z0-9_\-]+/', '_', $document->title);
+$lguName     = preg_replace('/[^A-Za-z0-9_\-]+/', '_', $bidding->lgu->name ?? 'LGU');
+$projectName = preg_replace('/[^A-Za-z0-9_\-]+/', '_', $bidding->project_name ?? 'Project');
 
-    return response()->download($outputPath)->deleteFileAfterSend(true);
+// Build final output path with Title + LGU + Project + IDs
+$outputPath = $outputDir . DIRECTORY_SEPARATOR .
+              $title . '_' . $lguName . '_' . $projectName . '_' .
+              $bidding->id . '_' . $document->id . '.docx';
+
+$templateProcessor->saveAs($outputPath);
+
+return response()->download($outputPath)->deleteFileAfterSend(true);
+
 }
 
 }
