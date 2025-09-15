@@ -18,7 +18,9 @@ class Bidding extends Model
         'lgu_id',
         'reference_number',
         'delivery_schedule', 
-        'solicitation_number',  // ✅ allow saving LGU reference
+        'solicitation_number', 
+        'prep_date',
+        'category', // ✅ allow saving LGU reference
     ];
 
     // ✅ Relationship

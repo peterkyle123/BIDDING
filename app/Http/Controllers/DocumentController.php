@@ -1,6 +1,6 @@
 <?php
-
 namespace App\Http\Controllers;
+
 
 use App\Models\Document;
 use App\Models\LGU;
@@ -131,6 +131,10 @@ $request->validate([
     $templateProcessor->setValue('reference_number', $bidding->reference_number ?? '');
     $templateProcessor->setValue('abc', $bidding->abc);
     $templateProcessor->setValue('pre_bid', $bidding->pre_bid);
+    $templateProcessor->setValue(
+    'prep_date',
+    $bidding->prep_date ? \Carbon\Carbon::parse($bidding->prep_date)->format('F j, Y') : ''
+);
     $templateProcessor->setValue('bid_submission', $bidding->bid_submission);
     $templateProcessor->setValue('bid_opening', $this->formatDateWithPartOfDay($bidding->bid_opening));
     $templateProcessor->setValue('delivery_schedule', $bidding->delivery_schedule ?? '');

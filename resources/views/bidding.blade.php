@@ -22,6 +22,7 @@
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project Name</th>
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ABC</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bid Submission</th>
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
     </tr>
@@ -32,6 +33,7 @@
         <td class="px-4 py-3">{{ $loop->iteration }}</td>
         <td class="px-4 py-3 truncate max-w-xs" title="{{ $bidding->project_name }}">{{ $bidding->project_name }}</td>
         <td class="px-4 py-3">₱{{ number_format($bidding->abc, 2) }}</td>
+        <td class="px-4 py-3">{{ $bidding->category ?? 'N/A' }}</td>
         <td class="px-4 py-3">
     {{ $bidding->bid_submission ? \Carbon\Carbon::parse($bidding->bid_submission)->format('M d, Y') : 'N/A' }}
 </td>
@@ -50,7 +52,8 @@
                 '{{ addslashes($bidding->lgu->envelope_system ?? '') }}',
                 '{{ addslashes($bidding->solicitation_number ?? '') }}',
                 '{{ addslashes($bidding->reference_number ?? '') }}',
-                '{{ addslashes($bidding->delivery_schedule ?? '') }}'
+                '{{ addslashes($bidding->delivery_schedule ?? '') }}', 
+                    '{{ addslashes($bidding->category ?? '') }}'  <!-- ✅ new -->
             )" class="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
                 Edit
             </button>
@@ -90,7 +93,8 @@
     <!-- Collapsible Details -->
     <!-- Collapsible Details (replace your existing details-{{ $loop->iteration }} row) -->
 <tr id="details-{{ $loop->iteration }}" class="bg-gray-50 hidden">
-    <td colspan="5" class="px-4 py-2">
+ <td colspan="6" class="p-0">
+    <div class="p-4">
         <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
             <div><strong>Solicitation #:</strong> {{ $bidding->solicitation_number ?? 'N/A' }}</div>
             <div><strong>Reference #:</strong> {{ $bidding->reference_number ?: 'N/A' }}</div>
@@ -98,12 +102,16 @@
             <div><strong>Pre-bid:</strong>
                 {{ $bidding->pre_bid ? \Carbon\Carbon::parse($bidding->pre_bid)->format('M d, Y h:i A') : 'N/A' }}
             </div>
+               <p><strong>Preparation Date:</strong> 
+        {{ $bidding->prep_date ? \Carbon\Carbon::parse($bidding->prep_date)->format('F j, Y') : 'N/A' }}
+    </p> <!-- 🆕 added -->
             <div><strong>Bid Opening:</strong>
                 {{ $bidding->bid_opening ? \Carbon\Carbon::parse($bidding->bid_opening)->format('M d, Y h:i A') : 'N/A' }}
             </div>
             <div><strong>Procuring Entity:</strong> {{ $bidding->lgu->name ?? 'N/A' }}</div>
             <div><strong>Envelope System:</strong> {{ $bidding->lgu->envelope_system ?? 'N/A' }}</div>
-        </div>
+       </div>
+
 
         <!-- ===== Document selection form (Step 1) ===== -->
         <form id="zipForm-{{ $bidding->id }}" action="{{ route('biddings.downloadZip', $bidding->id) }}" method="POST">
@@ -174,6 +182,14 @@
             </div>
 
             <div class="mb-4">
+    <label class="block text-gray-700 mb-1">Preparation Date</label>
+    <input type="date" name="prep_date" id="prepDate"
+           class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none"
+           required>
+</div>
+
+
+            <div class="mb-4">
                 <label class="block text-gray-700 mb-1">Bid Submission</label>
                 <input type="datetime-local" name="bid_submission" id="bidSubmission" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none" >
             </div>
@@ -197,6 +213,13 @@
                 <label class="block text-gray-700 mb-1">Delivery Schedule</label>
                 <input type="text" name="delivery_schedule" id="deliverySchedule" placeholder="e.g. 20 days from delivery of P.O" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none">
             </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-1">Category</label>
+                <input type="text" name="category" id="category"
+                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-bid-green outline-none">
+            </div>
+
 
             <div class="mb-4">
                 <label class="block text-gray-700 mb-1">Select LGU</label>
@@ -259,7 +282,7 @@ document.getElementById('lguId').addEventListener('change', function() {
     document.getElementById('envelopeSystem').value = envelopeSystem;
 });
 
-function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub = '', bidOpen = '', lguId = '', envelopeSystem = '',solicitationNumber = '', referenceNumber = '', deliverySchedule = '') {
+function openModal(action, id = '', project = '', abc = '', preBid = '', prepDate = '', bidSub = '', bidOpen = '', lguId = '', envelopeSystem = '',solicitationNumber = '', referenceNumber = '', deliverySchedule = '', category = '') {
     const modal = document.getElementById('biddingModal');
     modal.classList.remove('hidden');
     const form = document.getElementById('biddingForm');
@@ -274,6 +297,8 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub 
         document.getElementById('projectName').value = '';
         document.getElementById('abc').value = '';
         document.getElementById('preBid').value = preBid ?? '';
+        document.getElementById('prepDate').value = '';
+
         document.getElementById('bidSubmission').value = bidSub ?? '';                   
         document.getElementById('bidOpening').value = '';
         document.getElementById('lguId').value = '';
@@ -281,6 +306,8 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub 
         document.getElementById('solicitationNumber').value = solicitationNumber;
         document.getElementById('referenceNumber').value = '';
         document.getElementById('deliverySchedule').value = '';
+        document.getElementById('category').value = '';
+
     } else {
         document.getElementById('modalTitle').innerText = 'Edit Bidding Project';
         form.action = `/biddings/${id}`;
@@ -288,6 +315,7 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub 
         document.getElementById('projectName').value = project;
         document.getElementById('abc').value = abc;
         document.getElementById('preBid').value = preBid;
+        document.getElementById('prepDate').value = bidding.prep_date ?? '';
         document.getElementById('bidSubmission').value = bidSub;
         document.getElementById('bidOpening').value = bidOpen;
         document.getElementById('lguId').value = lguId;
@@ -295,6 +323,8 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', bidSub 
         document.getElementById('solicitationNumber').value = solicitationNumber;
         document.getElementById('referenceNumber').value = referenceNumber;
         document.getElementById('deliverySchedule').value = deliverySchedule;
+        document.getElementById('category').value = category;
+
 
         // Add _method=PUT for edit
         let methodInput = document.createElement('input');
@@ -344,6 +374,7 @@ window.addEventListener('click', function(e) {
                 bidding.project_name,
                 bidding.abc,
                 bidding.pre_bid,
+                
                 bidding.bid_submission,
                 bidding.bid_opening,
                 bidding.lgu_id,
