@@ -9,3 +9,16 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+/* .form-row {
+    @apply flex items-stretch gap-2 mb-4;
+}
+
+.form-row label {
+    @apply w-1/4 bg-gray-100 p-2 flex items-center rounded;
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea {
+    @apply w-3/4 border p-2 rounded h-12;
+} */

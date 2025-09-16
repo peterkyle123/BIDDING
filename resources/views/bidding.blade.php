@@ -46,6 +46,7 @@
                 '{{ addslashes($bidding->project_name) }}',
                 '{{ $bidding->abc }}',
                 '{{ $bidding->pre_bid }}',
+                 '{{ $bidding->prep_date }}',
                 '{{ $bidding->bid_submission }}',
                 '{{ $bidding->bid_opening }}',
                 {{ $bidding->lgu_id }},
@@ -91,7 +92,7 @@
     </tr>
 
     <!-- Collapsible Details -->
-    <!-- Collapsible Details (replace your existing details-{{ $loop->iteration }} row) -->
+   
 <tr id="details-{{ $loop->iteration }}" class="bg-gray-50 hidden">
  <td colspan="6" class="p-0">
     <div class="p-4">
@@ -315,7 +316,7 @@ function openModal(action, id = '', project = '', abc = '', preBid = '', prepDat
         document.getElementById('projectName').value = project;
         document.getElementById('abc').value = abc;
         document.getElementById('preBid').value = preBid;
-        document.getElementById('prepDate').value = bidding.prep_date ?? '';
+        document.getElementById('prepDate').value = prepDate ?? '';
         document.getElementById('bidSubmission').value = bidSub;
         document.getElementById('bidOpening').value = bidOpen;
         document.getElementById('lguId').value = lguId;
@@ -374,14 +375,15 @@ window.addEventListener('click', function(e) {
                 bidding.project_name,
                 bidding.abc,
                 bidding.pre_bid,
-                
+                bidding.prep_date,
                 bidding.bid_submission,
                 bidding.bid_opening,
                 bidding.lgu_id,
                 bidding.lgu?.envelope_system ?? '',
                 bidding.solicitation_number ?? '',
                 bidding.reference_number ?? '',
-                bidding.delivery_schedule ?? ''
+                bidding.delivery_schedule ?? '',
+                bidding.category
             );
         }
     });
