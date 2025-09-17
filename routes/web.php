@@ -6,7 +6,7 @@ use App\Http\Controllers\BiddingController;
 use App\Models\Bidding;
 use Carbon\Carbon;
 use App\Http\Controllers\DocumentController;
-
+use App\Http\Controllers\StatusController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -74,3 +74,5 @@ Route::get('/biddings/{bidding}/generate/{document}', [DocumentController::class
     ->name('biddings.generate');
 Route::post('/biddings/{bidding}/download-zip', [BiddingController::class, 'downloadZip'])
     ->name('biddings.downloadZip');
+Route::post('/biddings/{bidding}/status', [StatusController::class, 'update'])->name('biddings.updateStatus');
+

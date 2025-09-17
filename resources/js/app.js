@@ -55,3 +55,22 @@ window.closeModal = function() {
     if (!modal) return;
     modal.classList.add('hidden');
 };
+function changeStatus(biddingId, newStatus) {
+    fetch(`/biddings/${biddingId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            alert('Status updated to ' + data.status);
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}

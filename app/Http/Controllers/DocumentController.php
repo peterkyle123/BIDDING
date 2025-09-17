@@ -1,6 +1,6 @@
 <?php
-namespace App\Http\Controllers;
 
+namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\LGU;
@@ -165,6 +165,13 @@ $templateProcessor->saveAs($outputPath);
 
 return response()->download($outputPath)->deleteFileAfterSend(true);
 
+}
+public function dashboard()
+{
+    $biddingsCount = \App\Models\Bidding::count();
+    $documentsCount = \App\Models\Document::count();
+
+    return view('dashboard', compact('biddingsCount', 'documentsCount'));
 }
 
 }
