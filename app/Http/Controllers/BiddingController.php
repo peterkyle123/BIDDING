@@ -5,16 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Bidding;
 use App\Models\LGU;
 use App\Models\Document;
+use App\Traits\DocumentProcessorTrait; // Import the new trait
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class BiddingController extends Controller
 {
+    use DocumentProcessorTrait; // Use the trait to access shared logic
+
     public function index(Request $request)
     {
-       
-
         $sort = $request->query('sort', 'date'); 
         $direction = $request->query('direction', 'asc'); 
 
@@ -51,22 +52,12 @@ class BiddingController extends Controller
         ]);
 
         $data = $request->only([
-            'project_name',
-            'abc',
-            'pre_bid',
-            'bid_submission',
-            'bid_opening',
-            'lgu_id',
-            'reference_number',
-            'delivery_schedule',
-            'solicitation_number',
-            'prep_date',
-            'category',
+            'project_name', 'abc', 'pre_bid', 'bid_submission', 'bid_opening', 
+            'lgu_id', 'reference_number', 'delivery_schedule', 
+            'solicitation_number', 'prep_date', 'category',
         ]);
 
-        // Default status is Draft
         $data['status'] = 'Draft';
-
         Bidding::create($data);
 
         return redirect()->route('biddings.index')->with('success', 'Bidding project added!');
@@ -89,21 +80,12 @@ class BiddingController extends Controller
         ]);
 
         $data = $request->only([
-            'project_name',
-            'abc',
-            'pre_bid',
-            'bid_submission',
-            'bid_opening',
-            'lgu_id',
-            'reference_number',
-            'delivery_schedule',
-            'solicitation_number',
-            'prep_date',
-            'category',
+            'project_name', 'abc', 'pre_bid', 'bid_submission', 'bid_opening', 
+            'lgu_id', 'reference_number', 'delivery_schedule', 
+            'solicitation_number', 'prep_date', 'category',
         ]);
 
         $bidding->update($data);
-
         return redirect()->route('biddings.index')->with('success', 'Bidding project updated!');
     }
 
@@ -124,7 +106,8 @@ class BiddingController extends Controller
 
         $documents = Document::whereIn('id', $request->document_ids)->get();
 
-        $folderName = preg_replace('/[^\w\-]/', '_', $bidding->project_name);
+        // Use trait-style cleaning for the folder name
+        $folderName = substr(preg_replace('/[^\w\-]/', '_', $bidding->project_name), 0, 50);
         $zipFileName = $folderName . '_docs.zip';
         $zipPath = storage_path("app/public/tmp/$zipFileName");
 
@@ -144,93 +127,30 @@ class BiddingController extends Controller
 
                 $templateProcessor = new TemplateProcessor($templatePath);
 
-                $placeholders = [
-                    'project_name'       => $bidding->project_name,
-                    'solicitation_number'=> $bidding->solicitation_number ?? '',
-                    'reference_number'   => $bidding->reference_number ?? '',
-                    'abc'                => $bidding->abc,
-                    'pre_bid'            => $bidding->pre_bid ?? '',
-                    'prep_date'          => $bidding->prep_date 
-                                              ? \Carbon\Carbon::parse($bidding->prep_date)->format('F j, Y') 
-                                              : '',
-                    'bid_submission'     => $bidding->bid_submission ?? '',
-                    'bid_opening'        => $bidding->bid_opening 
-                                              ? $this->formatDateWithPartOfDay($bidding->bid_opening) 
-                                              : '',
-                    'delivery_schedule'  => $bidding->delivery_schedule ?? '',
-                    'name'               => $bidding->lgu->name ?? '',
-                    'location'           => $bidding->lgu->location ?? '',
-                    'bac_chairman'       => $bidding->lgu->bac_chairman ?? '',
-                    'category'           => $bidding->category ?? '',
-                ];
+                // ✅ Apply placeholders using the Trait
+                $this->applyPlaceholders($templateProcessor, $bidding);
 
-                foreach ($placeholders as $key => $value) {
-                    $templateProcessor->setValue($key, $value);
-                    $templateProcessor->setValue(strtoupper($key), strtoupper($value));
-                }
+                // ✅ Generate short filename using the Trait (Fixes the Word Error)
+                $fileName = $this->getSafeFileName(
+                    $document->title, 
+                    $bidding->lgu->name ?? 'LGU', 
+                    $bidding->project_name, 
+                    $bidding->id, 
+                    $document->id
+                );
 
-                $safeTitle   = preg_replace('/[^\w\-]/', '_', $document->title);
-                $safeLgu     = preg_replace('/[^\w\-]/', '_', $bidding->lgu->name ?? 'LGU');
-                $safeProject = preg_replace('/[^\w\-]/', '_', $bidding->project_name ?? 'Project');
-
-                $fileName = "{$safeTitle}_{$safeLgu}_{$safeProject}_{$bidding->id}_{$document->id}.docx";
                 $tempDocPath = storage_path("app/public/tmp/$fileName");
                 $templateProcessor->saveAs($tempDocPath);
 
                 $zip->addFile($tempDocPath, "$folderName/$fileName");
             }
-
             $zip->close();
         }
 
         if (!file_exists($zipPath)) {
-            abort(404, "ZIP file was not created: $zipPath");
+            abort(404, "ZIP file was not created.");
         }
 
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
-
-    private function formatDateWithPartOfDay($dateTime)
-    {
-        $carbon = \Carbon\Carbon::parse($dateTime);
-        $hour = $carbon->format('G');
-
-        $part = match (true) {
-            $hour >= 5 && $hour < 12 => 'in the morning',
-            $hour >= 12 && $hour < 17 => 'in the afternoon',
-            $hour >= 17 && $hour < 21 => 'in the evening',
-            default => 'at night',
-        };
-
-        return $carbon->format('F d, Y \a\t g:i a') . " {$part}";
-    }
-    public function allowedStatusTransitions()
-{
-    $status = $this->status;
-    $today = now()->toDateString();
-    $bidSubmission = optional($this->bid_submission)->toDateString();
-
-    // Automatic transition to Opening if bid submission is today
-    if($status !== 'Cancelled' && $bidSubmission === $today) {
-        return ['Opening'];
-    }
-
-    switch ($status) {
-        case 'Draft':
-        case 'Ongoing':
-        case 'Closed':
-            return ['Draft', 'Ongoing', 'Closed', 'Cancelled'];
-        case 'Cancelled':
-            return ['Cancelled'];
-        case 'Opening':
-            return ['Cancelled', 'Awarded'];
-        case 'Awarded':
-            return ['Completed'];
-        case 'Completed':
-            return ['Completed'];
-        default:
-            return [$status];
-    }
-}
-
 }
