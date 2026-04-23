@@ -65,6 +65,12 @@
     @else
         <p class="text-gray-600">No bidding history available for this LGU.</p>
     @endif
+    
 </div>
+<button 
+    onclick="openNotesModal()"
+    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+    + Add Special Notes
+</button>
 
 @endsection
